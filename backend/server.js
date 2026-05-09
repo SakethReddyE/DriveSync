@@ -27,14 +27,17 @@ const server = http.createServer(app); // wrap express in http.Server for socket
 socketManager.init(server);
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
+// Allow any origin — required because Vercel generates multiple preview URLs
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN || '*',
+    origin: true, // reflects the request origin, allowing all
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
   })
 );
+// Handle preflight requests explicitly
+app.options('*', cors());
 
 // ── Body parsers ──────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' }));
