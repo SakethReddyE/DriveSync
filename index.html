@@ -9,7 +9,7 @@
 <!-- Chart.js for admin analytics -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <!-- Socket.io client -->
-<script src="http://localhost:5000/socket.io/socket.io.js"></script>
+<script src="https://YOUR-RAILWAY-URL.up.railway.app/socket.io/socket.io.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
 :root{
@@ -802,8 +802,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--t
 //  backend API calls. The JWT token is stored in localStorage under 'ds_token'.
 // ------------------------------------------------------------------------------
 
-const API = 'http://localhost:5000/api';
-const SOCKET_URL = 'http://localhost:5000';
+const API = 'https://drivesync-production.up.railway.app/api';
+const SOCKET_URL = 'https://drivesync-production.up.railway.app';
 
 // -- Token helpers -------------------------------------------------------------
 const Auth = {
