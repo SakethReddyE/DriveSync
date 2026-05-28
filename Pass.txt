@@ -1,6 +1,0 @@
-cd backend
-npm run dev
-
-Sign up as a new user → books a driver
-Log in as a driver → ramesh@drv.in / Drv@1234
-Admin panel → admin@drivesync.in / Admin@123
