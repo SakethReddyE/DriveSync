@@ -24,8 +24,7 @@ Built with a frontend-backend separated architecture using Node.js, Express.js, 
 
 ## Backend API
 
-[https://drivesync-production.up.railway.app](https://drivesync-production.up.railway.app)
-
+[https://drivesync-production.up.railway.app/api/health](https://drivesync-production.up.railway.app/api/health)
 ---
 
 # ✨ Core Features
