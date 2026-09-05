@@ -1,0 +1,34 @@
+# Render Blueprint — deploys the DriveSync backend (Express + Socket.io) as a
+# free, always-on-with-keepalive web service.
+# Spec: https://render.com/docs/blueprint-spec
+#
+# In Render:  New +  →  Blueprint  →  connect this repo  →  it reads this file.
+# Secrets (sync:false) are entered once in the Render dashboard, never in git.
+
+services:
+  - type: web
+    name: drivesync-api
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20.11.1
+      - key: MONGO_URI          # MongoDB Atlas connection string
+        sync: false
+      - key: JWT_SECRET         # long random string — `openssl rand -hex 32`
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: ADMIN_EMAIL        # unified-login admin account
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CLIENT_ORIGIN      # your Vercel frontend URL (for Socket.io CORS)
+        sync: false
+      - key: GOOGLE_CLIENT_ID   # added when we wire Google Sign-In
+        sync: false
