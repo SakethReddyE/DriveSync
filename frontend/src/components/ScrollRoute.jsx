@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useScroll, useMotionValueEvent } from 'framer-motion'
+import CarShape from './CarShape'
 
-/* A serpentine "route" spanning the whole page. As you scroll, a car drives
-   along it, the trail fills in persimmon behind it, and waypoints light up. */
-function buildRoute(w, h) {
-  if (!w || !h) return { d: '', waypoints: [] }
+/* A serpentine route spanning the page (from below the nav to just above the
+   footer). As you scroll, the car drives it, the trail fills persimmon behind
+   it, waypoints light up, and each section blooms as the car reaches it. */
+function buildRoute(w, top, bottom) {
+  if (!w || bottom <= top) return { d: '', waypoints: [] }
   const cx = w / 2
   const amp = Math.min(w * 0.34, 360)
-  const top = 96
-  const bottom = h - 90
   const seg = 460
   const waypoints = []
   let x = cx - amp * 0.25
@@ -29,24 +29,37 @@ function buildRoute(w, h) {
 }
 
 export default function ScrollRoute() {
-  const [dims, setDims] = useState({ w: 0, h: 0 })
+  const [geo, setGeo] = useState({ w: 0, h: 0, top: 96, bottom: 0 })
   const baseRef = useRef(null)
   const drawRef = useRef(null)
   const carRef = useRef(null)
   const glowRef = useRef(null)
   const wpRefs = useRef([])
+  const sectionsRef = useRef([])
   const lenRef = useRef(0)
-  const lastDims = useRef({ w: 0, h: 0 })
+  const last = useRef({ w: 0, h: 0, bottom: 0 })
   const { scrollYProgress } = useScroll()
 
   useEffect(() => {
     const measure = () => {
       const w = document.documentElement.clientWidth
       const h = document.documentElement.scrollHeight
-      // guard against feedback loops — only update on meaningful change
-      if (Math.abs(w - lastDims.current.w) < 2 && Math.abs(h - lastDims.current.h) < 8) return
-      lastDims.current = { w, h }
-      setDims({ w, h })
+      const footer = document.querySelector('.footer')
+      const bottom = footer ? footer.offsetTop - 48 : h - 90
+      if (
+        Math.abs(w - last.current.w) < 2 &&
+        Math.abs(h - last.current.h) < 8 &&
+        Math.abs(bottom - last.current.bottom) < 8
+      )
+        return
+      last.current = { w, h, bottom }
+      // sections to bloom (skip the hero — it's full from the start)
+      const secs = Array.from(document.querySelectorAll('main > section'))
+      secs.forEach((el, i) => {
+        if (i > 0) el.classList.add('bloomable')
+      })
+      sectionsRef.current = secs
+      setGeo({ w, h, top: 96, bottom })
     }
     measure()
     const t1 = setTimeout(measure, 500)
@@ -62,7 +75,10 @@ export default function ScrollRoute() {
     }
   }, [])
 
-  const { d, waypoints } = useMemo(() => buildRoute(dims.w, dims.h), [dims.w, dims.h])
+  const { d, waypoints } = useMemo(
+    () => buildRoute(geo.w, geo.top, geo.bottom),
+    [geo.w, geo.top, geo.bottom],
+  )
 
   const update = (p) => {
     const base = baseRef.current
@@ -77,6 +93,7 @@ export default function ScrollRoute() {
     const ang = (Math.atan2(ahead.y - pt.y, ahead.x - pt.x) * 180) / Math.PI
     car.setAttribute('transform', `translate(${pt.x} ${pt.y}) rotate(${ang})`)
     if (glowRef.current) glowRef.current.setAttribute('transform', `translate(${pt.x} ${pt.y})`)
+
     for (let i = 0; i < wpRefs.current.length; i++) {
       const el = wpRefs.current[i]
       const wp = waypoints[i]
@@ -84,9 +101,18 @@ export default function ScrollRoute() {
       if (pt.y >= wp.y - 6) el.classList.add('wp-lit')
       else el.classList.remove('wp-lit')
     }
+
+    // bloom sections the car has reached (on screen)
+    const carScreenY = pt.y - window.scrollY
+    const secs = sectionsRef.current
+    for (let i = 1; i < secs.length; i++) {
+      const el = secs[i]
+      if (!el || el.classList.contains('bloomed')) continue
+      const r = el.getBoundingClientRect()
+      if (carScreenY >= r.top + 24) el.classList.add('bloomed')
+    }
   }
 
-  // recompute length + reposition whenever the path changes
   useEffect(() => {
     const draw = drawRef.current
     if (!draw || !d) return
@@ -100,11 +126,11 @@ export default function ScrollRoute() {
   useMotionValueEvent(scrollYProgress, 'change', update)
 
   return (
-    <div className="route-layer" style={{ height: dims.h || '100%' }} aria-hidden>
-      <svg width={dims.w} height={dims.h} viewBox={`0 0 ${dims.w} ${dims.h}`} fill="none">
+    <div className="route-layer" style={{ height: geo.h || '100%' }} aria-hidden>
+      <svg width={geo.w} height={geo.h} viewBox={`0 0 ${geo.w} ${geo.h}`} fill="none">
         <defs>
           <radialGradient id="carGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="var(--persimmon)" stopOpacity="0.28" />
+            <stop offset="0%" stopColor="var(--persimmon)" stopOpacity="0.22" />
             <stop offset="100%" stopColor="var(--persimmon)" stopOpacity="0" />
           </radialGradient>
         </defs>
@@ -112,7 +138,7 @@ export default function ScrollRoute() {
         <path
           ref={baseRef}
           d={d}
-          stroke="rgba(23,19,13,0.13)"
+          stroke="rgba(23,19,13,0.12)"
           strokeWidth="2.5"
           strokeDasharray="1 13"
           strokeLinecap="round"
@@ -130,11 +156,9 @@ export default function ScrollRoute() {
           />
         ))}
 
-        <circle ref={glowRef} className="route-glow" r="52" />
+        <circle ref={glowRef} className="route-glow" r="60" />
         <g ref={carRef} className="route-car">
-          <rect x="-13" y="-8" width="26" height="16" rx="5" fill="var(--ink)" />
-          <rect x="-8" y="-5.5" width="9" height="11" rx="2.5" fill="var(--paper)" />
-          <circle cx="9.5" cy="0" r="2" fill="var(--amber)" />
+          <CarShape scale={0.95} />
         </g>
       </svg>
     </div>

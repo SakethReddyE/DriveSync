@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
+import CarShape from './CarShape'
 
-/* Editorial light "driver en route" card. Car drives the route (SMIL). */
+/* Google-Maps-style live card: street grid, a blue route that follows the
+   roads, A/B markers, pickup/drop addresses, and the real car driving it. */
 export default function LiveMapCard() {
   return (
     <motion.div
@@ -9,81 +11,98 @@ export default function LiveMapCard() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1], delay: 0.35 }}
     >
-      <div className="map-head">
-        <span className="pill">
-          <span className="dot" /> LIVE
-        </span>
-        <span className="map-eta mono">ETA 3 MIN</span>
+      {/* directions box (addresses live here) */}
+      <div className="dir-box">
+        <div className="dir-points">
+          <span className="dir-connector" />
+          <div className="dir-row">
+            <span className="dir-dot dot-a" />
+            <span className="dir-addr">Kukatpally, Hyderabad</span>
+          </div>
+          <div className="dir-row">
+            <span className="dir-dot dot-b" />
+            <span className="dir-addr">HITEC City, Hyderabad</span>
+          </div>
+        </div>
+        <div className="dir-meta">
+          <b className="mono">12.4 km</b>
+          <span className="mono">24 min</span>
+        </div>
       </div>
 
       <div className="map-frame">
-        <svg className="map-svg" viewBox="0 0 400 250" preserveAspectRatio="xMidYMid slice">
-          {/* city blocks */}
-          <g fill="rgba(23,19,13,0.05)">
-            <rect x="20" y="24" width="90" height="64" rx="4" />
-            <rect x="130" y="14" width="120" height="52" rx="4" />
-            <rect x="270" y="30" width="110" height="70" rx="4" />
-            <rect x="20" y="150" width="120" height="80" rx="4" />
-            <rect x="250" y="150" width="130" height="80" rx="4" />
-          </g>
-          {/* roads */}
-          <g stroke="rgba(23,19,13,0.14)" strokeWidth="10" strokeLinecap="round">
-            <path d="M0 120 H400" />
-            <path d="M200 0 V250" />
-          </g>
-          <g stroke="rgba(23,19,13,0.08)" strokeWidth="2">
-            <path d="M0 60 H400 M0 190 H400 M110 0 V250 M300 0 V250" />
+        <span className="map-live">
+          <span className="dot" /> LIVE
+        </span>
+        <svg className="map-svg" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice">
+          {/* land */}
+          <rect x="0" y="0" width="400" height="240" fill="#e9edf1" />
+          {/* water + park for map realism */}
+          <rect x="0" y="0" width="118" height="46" fill="#a9d4f5" />
+          <rect x="266" y="128" width="134" height="112" fill="#c7e3c0" />
+          {/* building blocks */}
+          <g fill="#dde3e8">
+            <rect x="86" y="72" width="104" height="34" rx="2" />
+            <rect x="226" y="72" width="76" height="34" rx="2" />
+            <rect x="86" y="132" width="104" height="34" rx="2" />
+            <rect x="18" y="132" width="44" height="80" rx="2" />
           </g>
 
-          {/* route */}
+          {/* roads — casing then white */}
+          <g stroke="#c9d0d5" strokeWidth="13" strokeLinecap="round">
+            <path d="M0 60H400M0 120H400M0 180H400" />
+            <path d="M70 0V240M210 0V240M320 0V240" />
+          </g>
+          <g stroke="#ffffff" strokeWidth="8" strokeLinecap="round">
+            <path d="M0 60H400M0 120H400M0 180H400" />
+            <path d="M70 0V240M210 0V240M320 0V240" />
+          </g>
+
+          {/* route — white casing then Google-blue */}
           <path
-            id="mapRoute"
-            d="M60 200 C 120 200, 120 120, 190 120 S 270 60, 338 44"
+            d="M70 180 H198 Q210 180 210 168 V132 Q210 120 222 120 H308 Q320 120 320 108 V60"
             fill="none"
-            stroke="var(--persimmon)"
-            strokeWidth="4"
+            stroke="#ffffff"
+            strokeWidth="10"
             strokeLinecap="round"
+            strokeLinejoin="round"
           />
           <path
-            d="M60 200 C 120 200, 120 120, 190 120 S 270 60, 338 44"
+            id="mapRoute"
+            d="M70 180 H198 Q210 180 210 168 V132 Q210 120 222 120 H308 Q320 120 320 108 V60"
             fill="none"
-            stroke="var(--paper)"
-            strokeWidth="2"
+            stroke="#1a73e8"
+            strokeWidth="5.5"
             strokeLinecap="round"
-            strokeDasharray="1 16"
-          >
-            <animate attributeName="stroke-dashoffset" from="0" to="-200" dur="3s" repeatCount="indefinite" />
-          </path>
+            strokeLinejoin="round"
+          />
 
-          {/* pickup pin */}
-          <circle cx="60" cy="200" r="6" fill="var(--ink)" />
-          <circle cx="60" cy="200" r="6" fill="none" stroke="var(--ink)" strokeWidth="2">
-            <animate attributeName="r" from="6" to="22" dur="2.6s" repeatCount="indefinite" />
-            <animate attributeName="opacity" from="0.5" to="0" dur="2.6s" repeatCount="indefinite" />
-          </circle>
+          {/* start marker (A) */}
+          <circle cx="70" cy="180" r="7.5" fill="#1a8a3f" stroke="#fff" strokeWidth="2.5" />
+          {/* destination pin (B) */}
+          <g>
+            <path
+              d="M320 44 C312 44 306 50 306 58 C306 68 320 80 320 80 C320 80 334 68 334 58 C334 50 328 44 320 44 Z"
+              fill="var(--persimmon)"
+              stroke="#fff"
+              strokeWidth="2"
+            />
+            <circle cx="320" cy="58" r="4.5" fill="#fff" />
+          </g>
 
-          {/* drop pin */}
-          <circle cx="338" cy="44" r="6" fill="var(--persimmon)" />
-          <circle cx="338" cy="44" r="6" fill="none" stroke="var(--persimmon)" strokeWidth="2">
-            <animate attributeName="r" from="6" to="22" dur="2.6s" begin="1.3s" repeatCount="indefinite" />
-            <animate attributeName="opacity" from="0.6" to="0" dur="2.6s" begin="1.3s" repeatCount="indefinite" />
-          </circle>
-
-          {/* car */}
+          {/* the real car, driving the route */}
           <g>
             <g>
-              <rect x="-11" y="-6.5" width="22" height="13" rx="4" fill="var(--ink)" />
-              <rect x="-7" y="-4.5" width="8" height="9" rx="2" fill="var(--paper)" />
-              <circle cx="8" cy="0" r="1.7" fill="var(--amber)" />
+              <CarShape scale={0.6} />
             </g>
-            <animateMotion dur="6s" repeatCount="indefinite" rotate="auto">
+            <animateMotion dur="7s" repeatCount="indefinite" rotate="auto">
               <mpath href="#mapRoute" />
             </animateMotion>
           </g>
         </svg>
       </div>
 
-      {/* ticket-style driver strip */}
+      {/* driver strip */}
       <div className="map-driver">
         <div className="map-avatar">RK</div>
         <div className="map-driver-info">
