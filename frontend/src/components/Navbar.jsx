@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, ArrowRight } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import Logo from './Logo'
-import { Magnetic } from '../lib/ui'
 
 const LINKS = [
   { label: 'How it works', href: '#how' },
-  { label: 'Features', href: '#features' },
+  { label: 'Why us', href: '#features' },
   { label: 'Drivers', href: '#drivers' },
 ]
 
@@ -15,7 +14,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 16)
+    const onScroll = () => setScrolled(window.scrollY > 12)
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
@@ -24,9 +23,9 @@ export default function Navbar() {
   return (
     <motion.header
       className={`nav ${scrolled ? 'nav-scrolled' : ''}`}
-      initial={{ y: -90, opacity: 0 }}
+      initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: [0.2, 0.8, 0.2, 1] }}
+      transition={{ duration: 0.7, ease: [0.2, 0.8, 0.2, 1], delay: 0.05 }}
     >
       <div className="nav-inner container">
         <Logo />
@@ -40,15 +39,11 @@ export default function Navbar() {
         </nav>
 
         <div className="nav-actions">
-          <button className="nav-signin interactive">Sign in</button>
-          <Magnetic as="a" href="#book" className="btn btn-primary nav-cta interactive">
-            Book a Driver <ArrowRight size={16} />
-          </Magnetic>
-          <button
-            className="nav-burger interactive"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Menu"
-          >
+          <button className="nav-signin">Sign in</button>
+          <a href="#book" className="btn btn-primary nav-cta">
+            Book a Driver
+          </a>
+          <button className="nav-burger" onClick={() => setOpen((v) => !v)} aria-label="Menu">
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
@@ -57,10 +52,10 @@ export default function Navbar() {
       <AnimatePresence>
         {open && (
           <motion.div
-            className="nav-mobile glass"
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
+            className="nav-mobile"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25 }}
           >
             {LINKS.map((l) => (

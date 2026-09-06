@@ -1,27 +1,26 @@
 import { ArrowRight } from 'lucide-react'
-import { Reveal, Magnetic } from '../lib/ui'
+import { Reveal } from '../lib/ui'
 
 export default function CTA() {
   return (
     <section className="section" id="drivers">
       <div className="container">
-        <Reveal className="cta-band grad-border">
-          <div className="cta-glow" aria-hidden />
-          <span className="eyebrow">Get moving</span>
+        <Reveal className="cta-band">
+          <span className="eyebrow cta-eyebrow">Get moving</span>
           <h2 className="cta-title">
-            Ready when <span className="grad-text">you are.</span>
+            Ready when <span className="it">you are.</span>
           </h2>
-          <p className="lead cta-sub">
+          <p className="cta-sub">
             Book a verified driver in under a minute — or start earning as one. DriveSync runs on
             your schedule, in your car.
           </p>
           <div className="cta-actions">
-            <Magnetic as="a" href="#book" className="btn btn-primary btn-lg interactive">
+            <a href="#book" className="btn btn-cta-primary btn-lg">
               Book a Driver <ArrowRight size={18} />
-            </Magnetic>
-            <Magnetic as="a" href="#" className="btn btn-ghost btn-lg interactive">
+            </a>
+            <a href="#" className="btn btn-cta-ghost btn-lg">
               Become a Driver
-            </Magnetic>
+            </a>
           </div>
         </Reveal>
       </div>

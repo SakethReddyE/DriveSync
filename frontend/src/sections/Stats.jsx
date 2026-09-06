@@ -10,19 +10,17 @@ const STATS = [
 
 export default function Stats() {
   return (
-    <section className="stats-section">
-      <div className="container">
-        <StaggerGroup className="stats-grid">
-          {STATS.map((s, i) => (
-            <motion.div className="stat" key={i} variants={staggerItem}>
-              <div className="stat-num grad-text-static">
-                <CountUp to={s.to} decimals={s.decimals || 0} suffix={s.suffix} />
-              </div>
-              <div className="stat-label">{s.label}</div>
-            </motion.div>
-          ))}
-        </StaggerGroup>
-      </div>
+    <section className="stats-section rule-top">
+      <StaggerGroup className="container stats-grid">
+        {STATS.map((s, i) => (
+          <motion.div className="stat" key={i} variants={staggerItem}>
+            <div className="stat-num">
+              <CountUp to={s.to} decimals={s.decimals || 0} suffix={s.suffix} />
+            </div>
+            <div className="stat-label mono">{s.label}</div>
+          </motion.div>
+        ))}
+      </StaggerGroup>
     </section>
   )
 }

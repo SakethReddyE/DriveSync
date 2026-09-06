@@ -7,48 +7,48 @@ const FEATURES = [
     icon: Radar,
     title: 'Real-time tracking',
     text: 'Watch your driver approach on a live map with second-by-second ETA — powered by websockets, not polling.',
-    tint: 'var(--cyan)',
+    tint: 'var(--persimmon)',
   },
   {
     icon: ShieldCheck,
     title: 'Verified drivers',
     text: 'Every driver is background-checked, licence-verified, and rated by real riders before they ever pick up.',
-    tint: 'var(--violet)',
+    tint: 'var(--cobalt)',
   },
   {
     icon: ReceiptText,
     title: 'Transparent fares',
     text: 'See the full breakdown — base, distance, service fee — before you confirm. No surge pricing, ever.',
-    tint: 'var(--lime)',
+    tint: 'var(--sage)',
   },
   {
     icon: Star,
     title: 'Two-way ratings',
     text: 'Riders rate drivers and drivers rate riders, so the quality bar stays high on both sides of every trip.',
-    tint: 'var(--pink)',
+    tint: 'var(--amber)',
   },
   {
     icon: BellRing,
     title: 'Instant dispatch',
-    text: 'Ride requests hit nearby online drivers the moment you book. Accept, and you’re matched in real time.',
-    tint: 'var(--blue)',
+    text: 'Ride requests reach nearby online drivers the moment you book. Accept, and you’re matched in real time.',
+    tint: 'var(--persimmon)',
   },
   {
     icon: LayoutDashboard,
     title: 'Ops dashboard',
     text: 'Admins approve drivers and watch live analytics — rides, revenue and ratings — as they happen.',
-    tint: 'var(--indigo)',
+    tint: 'var(--cobalt)',
   },
 ]
 
 export default function Features() {
   return (
-    <section className="section" id="features">
+    <section className="section rule-top" id="features">
       <div className="container">
         <Reveal className="section-head">
           <span className="eyebrow">Why DriveSync</span>
           <h2 className="section-title">
-            Built like a product, <span className="grad-text-static">not a demo.</span>
+            Built like a product, <span className="it accent">not a demo.</span>
           </h2>
         </Reveal>
 
@@ -57,9 +57,9 @@ export default function Features() {
             const Icon = f.icon
             return (
               <motion.div key={i} variants={staggerItem}>
-                <TiltCard className="bento-card grad-border interactive">
+                <TiltCard className="bento-card" max={7}>
                   <span className="bento-icon" style={{ '--tint': f.tint }}>
-                    <Icon size={22} />
+                    <Icon size={20} strokeWidth={2.2} />
                   </span>
                   <h3 className="bento-title">{f.title}</h3>
                   <p className="bento-text">{f.text}</p>
