@@ -132,14 +132,18 @@ export default function Book() {
             </div>
           </div>
           <div className="confirm-actions">
-            <button className="btn btn-primary" onClick={reset}>
+            {booked.ride?._id && (
+              <Link to={`/track/${booked.ride._id}`} className="btn btn-primary">
+                Track ride <ArrowRight size={16} />
+              </Link>
+            )}
+            <button className="btn btn-ghost" onClick={reset}>
               Book another
             </button>
-            <Link to="/" className="btn btn-ghost">
-              Back home
+            <Link to="/dashboard" className="btn btn-ghost">
+              My rides
             </Link>
           </div>
-          <p className="book-hint mono">Live tracking + your rides dashboard — coming next.</p>
         </motion.div>
       </main>
     )

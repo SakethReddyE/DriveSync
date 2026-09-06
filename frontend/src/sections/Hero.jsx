@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import LiveMapCard from '../components/LiveMapCard'
 
 const lineReveal = {
@@ -54,12 +55,12 @@ export default function Hero() {
           </motion.p>
 
           <motion.div className="hero-cta" {...fade(1)}>
-            <a href="#book" className="btn btn-primary btn-lg">
+            <Link to="/book" className="btn btn-primary btn-lg">
               Book a Driver <ArrowRight size={18} />
-            </a>
-            <a href="#drivers" className="btn btn-ghost btn-lg">
+            </Link>
+            <Link to="/become-driver" className="btn btn-ghost btn-lg">
               Become a Driver
-            </a>
+            </Link>
           </motion.div>
 
           <motion.div className="hero-trust" {...fade(1.15)}>

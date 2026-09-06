@@ -1,7 +1,16 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { validationResult } = require('express-validator');
+const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const Driver = require('../models/Driver');
+
+// Google OAuth — the Client ID is public (also embedded in the frontend), so a
+// fallback keeps sign-in working even if the env var isn't set on the host.
+const GOOGLE_CLIENT_ID =
+  process.env.GOOGLE_CLIENT_ID ||
+  '522069871211-83ap5f2vd9euhed3ailr6mp127u8l480.apps.googleusercontent.com';
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 // ─── Helper: sign a JWT ───────────────────────────────────────────────────────
 const signToken = (payload) =>
@@ -165,5 +174,52 @@ exports.getMe = async (req, res, next) => {
     return res.json({ success: true, user: { ...user.toObject(), role: 'user' } });
   } catch (err) {
     next(err);
+  }
+};
+
+/**
+ * POST /api/auth/google
+ * Verifies a Google ID token (from Google Identity Services), finds or creates
+ * the matching user, and returns a DriveSync JWT — same shape as login.
+ */
+exports.googleAuth = async (req, res, next) => {
+  try {
+    const { credential } = req.body;
+    if (!credential)
+      return res.status(400).json({ success: false, message: 'Missing Google credential' });
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+    const email = (payload.email || '').toLowerCase().trim();
+    if (!email)
+      return res.status(400).json({ success: false, message: 'Google account has no email' });
+
+    const name = payload.name || payload.given_name || email.split('@')[0];
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      // Google users don't use password login — store a random one to satisfy the schema.
+      user = await User.create({
+        name,
+        email,
+        phone: 'Google account',
+        password: crypto.randomBytes(24).toString('hex'),
+      });
+    }
+
+    const token = signToken({ id: user._id, role: 'user' });
+    return res.json({
+      success: true,
+      token,
+      role: 'user',
+      user: { id: user._id, name: user.name, email: user.email, phone: user.phone, role: 'user' },
+    });
+  } catch (err) {
+    return res
+      .status(401)
+      .json({ success: false, message: 'Google sign-in failed. Please try again.' });
   }
 };

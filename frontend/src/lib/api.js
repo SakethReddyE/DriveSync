@@ -7,6 +7,11 @@ export const API_BASE = API_URL
 export const SOCKET_URL =
   import.meta.env.VITE_SOCKET_URL || 'https://drivesync-api-zove.onrender.com'
 
+// Public Google OAuth client id (safe to ship to the browser).
+export const GOOGLE_CLIENT_ID =
+  import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+  '522069871211-83ap5f2vd9euhed3ailr6mp127u8l480.apps.googleusercontent.com'
+
 export function getToken() {
   try {
     return localStorage.getItem('ds_token')

@@ -1,30 +1,70 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { GOOGLE_CLIENT_ID } from '../lib/api'
 
-function GoogleIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
-      <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.6l6.7-6.7C35.6 2.6 30.1 0 24 0 14.6 0 6.4 5.4 2.6 13.2l7.8 6.1C12.2 13.5 17.6 9.5 24 9.5z" />
-      <path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9.1h12.4c-.5 2.9-2.1 5.3-4.6 7l7.1 5.5c4.2-3.9 6.6-9.6 6.6-16z" />
-      <path fill="#FBBC05" d="M10.4 28.3c-.5-1.4-.7-3-.7-4.6s.3-3.2.7-4.6l-7.8-6.1C.9 16.2 0 20 0 23.7s.9 7.5 2.6 10.7l7.8-6.1z" />
-      <path fill="#34A853" d="M24 47.4c6.1 0 11.3-2 15.1-5.5l-7.1-5.5c-2 1.3-4.6 2.1-8 2.1-6.4 0-11.8-4-13.6-9.8l-7.8 6.1C6.4 42 14.6 47.4 24 47.4z" />
-    </svg>
-  )
-}
+const roleRoute = (role) =>
+  role === 'admin' ? '/admin' : role === 'driver' || role === 'driver-pending' ? '/driver' : '/dashboard'
 
 export default function SignIn() {
-  const { login, signup } = useAuth()
+  const { login, signup, googleLogin } = useAuth()
   const navigate = useNavigate()
   const [mode, setMode] = useState('login')
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' })
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
+  const googleDiv = useRef(null)
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
-  const routeFor = (role) => (role === 'user' ? '/book' : '/')
+
+  useEffect(() => {
+    let cancelled = false
+    const init = () => {
+      if (cancelled || !window.google?.accounts?.id || !googleDiv.current) return
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async (resp) => {
+          setErr('')
+          setBusy(true)
+          try {
+            const d = await googleLogin(resp.credential)
+            navigate(roleRoute(d.role || 'user'))
+          } catch (e) {
+            setErr(e.message || 'Google sign-in failed')
+          } finally {
+            setBusy(false)
+          }
+        },
+      })
+      googleDiv.current.innerHTML = ''
+      window.google.accounts.id.renderButton(googleDiv.current, {
+        theme: 'outline',
+        size: 'large',
+        text: 'continue_with',
+        shape: 'pill',
+        width: 330,
+      })
+    }
+    if (window.google?.accounts?.id) init()
+    else {
+      const existing = document.getElementById('gsi-script')
+      if (existing) existing.addEventListener('load', init)
+      else {
+        const s = document.createElement('script')
+        s.id = 'gsi-script'
+        s.src = 'https://accounts.google.com/gsi/client'
+        s.async = true
+        s.defer = true
+        s.onload = init
+        document.head.appendChild(s)
+      }
+    }
+    return () => {
+      cancelled = true
+    }
+  }, [googleLogin, navigate])
 
   const submit = async (e) => {
     e.preventDefault()
@@ -40,7 +80,7 @@ export default function SignIn() {
               phone: form.phone.trim(),
               password: form.password,
             })
-      navigate(routeFor(d.role || d.user?.role || 'user'))
+      navigate(roleRoute(d.role || d.user?.role || 'user'))
     } catch (e2) {
       setErr(e2.message || 'Something went wrong.')
     } finally {
@@ -74,14 +114,7 @@ export default function SignIn() {
             : 'Hire a verified driver for your own car.'}
         </p>
 
-        <button
-          type="button"
-          className="btn btn-ghost auth-google"
-          disabled
-          title="Google sign-in — coming soon"
-        >
-          <GoogleIcon /> Continue with Google
-        </button>
+        <div className="google-wrap" ref={googleDiv} />
         <div className="auth-divider">
           <span>or</span>
         </div>
@@ -138,31 +171,19 @@ export default function SignIn() {
           {mode === 'login' ? (
             <>
               New here?{' '}
-              <button
-                onClick={() => {
-                  setMode('signup')
-                  setErr('')
-                }}
-              >
-                Create an account
-              </button>
+              <button onClick={() => { setMode('signup'); setErr('') }}>Create an account</button>
             </>
           ) : (
             <>
               Already have an account?{' '}
-              <button
-                onClick={() => {
-                  setMode('login')
-                  setErr('')
-                }}
-              >
-                Sign in
-              </button>
+              <button onClick={() => { setMode('login'); setErr('') }}>Sign in</button>
             </>
           )}
         </p>
 
-        <p className="auth-demo mono">Try a demo driver — suresh@drv.in · Drv@1234</p>
+        <p className="auth-demo mono">
+          Demo — rider: create one · driver: suresh@drv.in / Drv@1234
+        </p>
       </motion.div>
     </main>
   )

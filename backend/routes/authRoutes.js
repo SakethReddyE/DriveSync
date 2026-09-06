@@ -1,6 +1,6 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { signup, login, getMe } = require('../controllers/authController');
+const { signup, login, getMe, googleAuth } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
 const router = express.Router();
@@ -26,6 +26,9 @@ router.post(
   ],
   login
 );
+
+// POST /api/auth/google  — sign in / sign up with a Google ID token
+router.post('/google', googleAuth);
 
 // GET /api/auth/me  (protected)
 router.get('/me', protect, getMe);

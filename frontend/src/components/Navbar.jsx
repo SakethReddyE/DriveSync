@@ -24,6 +24,12 @@ export default function Navbar() {
   }, [])
 
   const firstName = user?.name ? user.name.split(' ')[0] : 'Account'
+  const dashPath =
+    user?.role === 'admin'
+      ? '/admin'
+      : user?.role === 'driver' || user?.role === 'driver-pending'
+        ? '/driver'
+        : '/dashboard'
 
   return (
     <motion.header
@@ -46,7 +52,9 @@ export default function Navbar() {
         <div className="nav-actions">
           {user ? (
             <>
-              <span className="nav-user mono">{firstName}</span>
+              <Link to={dashPath} className="nav-user mono">
+                {firstName}
+              </Link>
               <button className="nav-signin nav-logout" onClick={logout} title="Log out">
                 <LogOut size={16} />
               </button>
@@ -80,15 +88,20 @@ export default function Navbar() {
               </a>
             ))}
             {user ? (
-              <button
-                className="nav-mobile-signout"
-                onClick={() => {
-                  logout()
-                  setOpen(false)
-                }}
-              >
-                Log out ({firstName})
-              </button>
+              <>
+                <Link to={dashPath} onClick={() => setOpen(false)}>
+                  Dashboard
+                </Link>
+                <button
+                  className="nav-mobile-signout"
+                  onClick={() => {
+                    logout()
+                    setOpen(false)
+                  }}
+                >
+                  Log out ({firstName})
+                </button>
+              </>
             ) : (
               <Link to="/signin" onClick={() => setOpen(false)}>
                 Sign in

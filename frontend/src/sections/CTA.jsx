@@ -1,4 +1,5 @@
 import { ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { Reveal } from '../lib/ui'
 
 export default function CTA() {
@@ -15,12 +16,12 @@ export default function CTA() {
             your schedule, in your car.
           </p>
           <div className="cta-actions">
-            <a href="#book" className="btn btn-cta-primary btn-lg">
+            <Link to="/book" className="btn btn-cta-primary btn-lg">
               Book a Driver <ArrowRight size={18} />
-            </a>
-            <a href="#" className="btn btn-cta-ghost btn-lg">
+            </Link>
+            <Link to="/become-driver" className="btn btn-cta-ghost btn-lg">
               Become a Driver
-            </a>
+            </Link>
           </div>
         </Reveal>
       </div>
