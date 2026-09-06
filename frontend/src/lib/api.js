@@ -1,11 +1,16 @@
 // Central API client. Falls back to the live Render backend if no env var is set,
 // so the deployed build works even without Vercel env config.
-const API_URL =
-  import.meta.env.VITE_API_URL || 'https://drivesync-api-zove.onrender.com/api'
+// Normalise the base URL so it always ends with exactly one "/api",
+// whether the env var is set with, without, or with a trailing slash.
+const RAW_API = (import.meta.env.VITE_API_URL || 'https://drivesync-api-zove.onrender.com')
+  .replace(/\/+$/, '')
+const API_URL = /\/api$/.test(RAW_API) ? RAW_API : `${RAW_API}/api`
 
 export const API_BASE = API_URL
-export const SOCKET_URL =
-  import.meta.env.VITE_SOCKET_URL || 'https://drivesync-api-zove.onrender.com'
+// Socket connects to the host root (no /api).
+export const SOCKET_URL = (
+  import.meta.env.VITE_SOCKET_URL || API_URL.replace(/\/api$/, '')
+).replace(/\/+$/, '')
 
 // Public Google OAuth client id (safe to ship to the browser).
 export const GOOGLE_CLIENT_ID =
