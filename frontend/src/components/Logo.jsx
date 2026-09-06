@@ -1,6 +1,8 @@
+import { Link } from 'react-router-dom'
+
 export default function Logo() {
   return (
-    <a href="#top" className="logo" aria-label="DriveSync home">
+    <Link to="/" className="logo" aria-label="DriveSync home">
       <span className="logo-mark">
         <svg viewBox="0 0 32 32" fill="none" width="18" height="18">
           <path
@@ -15,6 +17,6 @@ export default function Logo() {
       <span className="logo-word">
         Drive<span className="accent">Sync</span>
       </span>
-    </a>
+    </Link>
   )
 }

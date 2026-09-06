@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, LogOut } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import Logo from './Logo'
+import { useAuth } from '../context/AuthContext'
 
 const LINKS = [
-  { label: 'How it works', href: '#how' },
-  { label: 'Why us', href: '#features' },
-  { label: 'Drivers', href: '#drivers' },
+  { label: 'How it works', href: '/#how' },
+  { label: 'Why us', href: '/#features' },
+  { label: 'Drivers', href: '/#drivers' },
 ]
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const { user, logout } = useAuth()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12)
@@ -19,6 +22,8 @@ export default function Navbar() {
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  const firstName = user?.name ? user.name.split(' ')[0] : 'Account'
 
   return (
     <motion.header
@@ -39,10 +44,21 @@ export default function Navbar() {
         </nav>
 
         <div className="nav-actions">
-          <button className="nav-signin">Sign in</button>
-          <a href="#book" className="btn btn-primary nav-cta">
+          {user ? (
+            <>
+              <span className="nav-user mono">{firstName}</span>
+              <button className="nav-signin nav-logout" onClick={logout} title="Log out">
+                <LogOut size={16} />
+              </button>
+            </>
+          ) : (
+            <Link to="/signin" className="nav-signin">
+              Sign in
+            </Link>
+          )}
+          <Link to="/book" className="btn btn-primary nav-cta">
             Book a Driver
-          </a>
+          </Link>
           <button className="nav-burger" onClick={() => setOpen((v) => !v)} aria-label="Menu">
             {open ? <X size={20} /> : <Menu size={20} />}
           </button>
@@ -63,9 +79,24 @@ export default function Navbar() {
                 {l.label}
               </a>
             ))}
-            <a href="#book" className="btn btn-primary" onClick={() => setOpen(false)}>
+            {user ? (
+              <button
+                className="nav-mobile-signout"
+                onClick={() => {
+                  logout()
+                  setOpen(false)
+                }}
+              >
+                Log out ({firstName})
+              </button>
+            ) : (
+              <Link to="/signin" onClick={() => setOpen(false)}>
+                Sign in
+              </Link>
+            )}
+            <Link to="/book" className="btn btn-primary" onClick={() => setOpen(false)}>
               Book a Driver
-            </a>
+            </Link>
           </motion.div>
         )}
       </AnimatePresence>
