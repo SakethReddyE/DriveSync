@@ -17,6 +17,41 @@
   z-index: 1;
 }
 
+/* ─── Scroll route (car threads the whole page) ──────────────────────────── */
+main {
+  position: relative;
+  z-index: 1;
+}
+.route-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+.route-layer svg {
+  display: block;
+  overflow: visible;
+}
+.wp {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 2;
+  transition: fill 0.4s ease, stroke 0.4s ease;
+}
+.wp.wp-lit {
+  fill: var(--persimmon);
+  stroke: var(--persimmon);
+}
+.route-car {
+  filter: drop-shadow(0 3px 5px rgba(23, 19, 13, 0.3));
+}
+.route-glow {
+  fill: url(#carGlow);
+}
+
 /* ─── Intro ──────────────────────────────────────────────────────────────── */
 .intro {
   position: fixed;
@@ -191,8 +226,8 @@
 
 /* ─── Hero ───────────────────────────────────────────────────────────────── */
 .hero {
-  padding-top: 150px;
-  padding-bottom: 64px;
+  padding-top: 116px;
+  padding-bottom: 44px;
 }
 .hero-grid {
   display: grid;
@@ -201,10 +236,10 @@
   align-items: center;
 }
 .hero-copy .eyebrow {
-  margin-bottom: 26px;
+  margin-bottom: 18px;
 }
 .hero-title {
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 .hero-title .line {
   display: block;
@@ -217,7 +252,7 @@
 }
 .hero-lead {
   max-width: 32rem;
-  margin-bottom: 34px;
+  margin-bottom: 24px;
 }
 .hero-lead em {
   font-family: var(--font-display);
@@ -228,7 +263,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  margin-bottom: 34px;
+  margin-bottom: 26px;
 }
 .hero-trust {
   display: flex;
@@ -549,10 +584,10 @@
   border-color: var(--ink);
 }
 .btn-cta-primary:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0 var(--ink);
   background: var(--paper);
   color: var(--ink);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px -12px rgba(23, 19, 13, 0.55);
 }
 .btn-cta-ghost {
   background: transparent;
@@ -560,8 +595,9 @@
   border-color: var(--ink);
 }
 .btn-cta-ghost:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 5px 5px 0 var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  transform: translateY(-2px);
 }
 
 /* ─── Footer ─────────────────────────────────────────────────────────────── */

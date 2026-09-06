@@ -114,8 +114,8 @@ h4 {
 .display {
   font-family: var(--font-display);
   font-weight: 600;
-  font-size: clamp(3rem, 8.5vw, 7rem);
-  line-height: 0.92;
+  font-size: clamp(2.7rem, 6.6vw, 5.7rem);
+  line-height: 0.94;
   letter-spacing: -0.03em;
 }
 .display .it {
@@ -200,20 +200,20 @@ h4 {
   color: var(--paper);
 }
 .btn-primary:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: var(--shadow-hard-accent);
   background: var(--persimmon);
   border-color: var(--persimmon);
   color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -12px var(--persimmon);
 }
 .btn-ghost {
   background: transparent;
   color: var(--ink);
 }
 .btn-ghost:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: var(--shadow-hard);
   background: var(--card);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -14px rgba(23, 19, 13, 0.45);
 }
 .btn-lg {
   padding: 17px 32px;

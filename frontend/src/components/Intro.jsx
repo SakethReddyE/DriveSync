@@ -5,22 +5,11 @@ import { motion } from 'framer-motion'
    forms, then the whole panel lifts to reveal the site. Once per session. */
 export default function Intro({ onDone }) {
   useEffect(() => {
-    const t = setTimeout(finish, 3000)
-    function finish() {
-      try {
-        sessionStorage.setItem('ds_intro_done', '1')
-      } catch (e) { /* private mode */ }
-      onDone()
-    }
+    const t = setTimeout(onDone, 3000)
     return () => clearTimeout(t)
   }, [onDone])
 
-  const skip = () => {
-    try {
-      sessionStorage.setItem('ds_intro_done', '1')
-    } catch (e) { /* ignore */ }
-    onDone()
-  }
+  const skip = () => onDone()
 
   return (
     <motion.div
