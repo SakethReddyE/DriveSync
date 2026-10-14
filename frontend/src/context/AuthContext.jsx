@@ -8,7 +8,15 @@ export const useAuth = () => useContext(AuthCtx)
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  /**
+   * appStatus tracks the authenticated rider's driver-application status.
+   * null  → no application or not a rider
+   * 'pending' | 'approved' | 'rejected' → real backend value
+   * This is populated lazily when the user is a rider (role==='user').
+   */
+  const [appStatus, setAppStatus] = useState(null)
 
+  // Restore session from stored token
   useEffect(() => {
     const t = getToken()
     if (!t) {
@@ -21,7 +29,24 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false))
   }, [])
 
-  // keep a realtime socket bound to the signed-in user/driver
+  // Once user is known, fetch their application status (riders only)
+  useEffect(() => {
+    if (!user || user.role !== 'user') {
+      setAppStatus(null)
+      return
+    }
+    let cancelled = false
+    api('/drivers/my-application')
+      .then((d) => {
+        if (!cancelled) setAppStatus(d.application?.status || null)
+      })
+      .catch(() => {
+        if (!cancelled) setAppStatus(null)
+      })
+    return () => { cancelled = true }
+  }, [user])
+
+  // Keep a realtime socket bound to the signed-in user/driver
   useEffect(() => {
     if (user && (user.role === 'user' || user.role === 'driver') && user.id) {
       connectSocket(user.role, user.id)
@@ -54,11 +79,27 @@ export function AuthProvider({ children }) {
   const logout = useCallback(() => {
     setToken(null)
     setUser(null)
+    setAppStatus(null)
     disconnectSocket()
   }, [])
 
+  /** Call after a successful driver application submission to update nav immediately */
+  const refreshAppStatus = useCallback(async () => {
+    if (!user || user.role !== 'user') return
+    try {
+      const d = await api('/drivers/my-application')
+      setAppStatus(d.application?.status || null)
+    } catch {
+      /* non-fatal */
+    }
+  }, [user])
+
   return (
-    <AuthCtx.Provider value={{ user, loading, login, signup, googleLogin, logout, setUser }}>
+    <AuthCtx.Provider value={{
+      user, loading, appStatus,
+      login, signup, googleLogin, logout,
+      setUser, refreshAppStatus,
+    }}>
       {children}
     </AuthCtx.Provider>
   )

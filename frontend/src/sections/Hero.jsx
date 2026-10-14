@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import LiveMapCard from '../components/LiveMapCard'
+import { useAuth } from '../context/AuthContext'
 
 const lineReveal = {
   hidden: { y: '110%' },
@@ -17,6 +18,29 @@ const fade = (delay) => ({
 })
 
 export default function Hero() {
+  const { user, loading, appStatus } = useAuth()
+
+  const isAdmin = user?.role === 'admin'
+  const isDriver = user?.role === 'driver' || user?.role === 'driver-pending'
+  const isRider = user?.role === 'user'
+
+  // Determine which CTAs to show based on role
+  const showBookCTA = !isAdmin && !isDriver          // riders + logged-out
+  const showBecomeCTA = !isAdmin && !isDriver && (!isRider || !appStatus)  // logged-out + riders without an application
+
+  // Destination for Become a Driver
+  const becomeDest = !user
+    ? '/signin?next=/become-driver'
+    : appStatus
+      ? '/become-driver'       // show status
+      : '/become-driver'       // new application
+
+  // Admin sees a direct link to their dashboard
+  const adminCTA = isAdmin && user
+
+  // Driver sees a link to their dashboard
+  const driverCTA = isDriver && user
+
   return (
     <section className="hero" id="book">
       <div className="container hero-grid">
@@ -54,14 +78,49 @@ export default function Hero() {
             trip, or whenever you need one. Booked in seconds, tracked in real time.
           </motion.p>
 
-          <motion.div className="hero-cta" {...fade(1)}>
-            <Link to="/book" className="btn btn-primary btn-lg">
-              Book a Driver <ArrowRight size={18} />
-            </Link>
-            <Link to="/become-driver" className="btn btn-ghost btn-lg">
-              Become a Driver
-            </Link>
-          </motion.div>
+          {/* Role-based CTA block — only rendered once auth has resolved */}
+          {!loading && (
+            <motion.div className="hero-cta" {...fade(1)}>
+              {adminCTA && (
+                <Link to="/admin" className="btn btn-primary btn-lg">
+                  Admin Dashboard <ArrowRight size={18} />
+                </Link>
+              )}
+
+              {driverCTA && (
+                <Link to="/driver" className="btn btn-primary btn-lg">
+                  Driver Dashboard <ArrowRight size={18} />
+                </Link>
+              )}
+
+              {showBookCTA && (
+                <Link to="/book" className="btn btn-primary btn-lg">
+                  Book a Driver <ArrowRight size={18} />
+                </Link>
+              )}
+
+              {showBecomeCTA && (
+                <Link to={becomeDest} className="btn btn-ghost btn-lg">
+                  Become a Driver
+                </Link>
+              )}
+
+              {/* Rider with a pending application — show application status link */}
+              {isRider && appStatus === 'pending' && (
+                <Link to="/become-driver" className="btn btn-ghost btn-lg">
+                  View Application
+                </Link>
+              )}
+            </motion.div>
+          )}
+
+          {/* Skeleton placeholder while auth loads — preserves layout */}
+          {loading && (
+            <motion.div className="hero-cta hero-cta-skeleton" {...fade(1)}>
+              <span className="hero-cta-skel-btn" />
+              <span className="hero-cta-skel-btn hero-cta-skel-ghost" />
+            </motion.div>
+          )}
 
           <motion.div className="hero-trust" {...fade(1.15)}>
             <div className="avatars">

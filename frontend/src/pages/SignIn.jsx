@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowRight, Loader2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
@@ -11,6 +11,15 @@ const roleRoute = (role) =>
 export default function SignIn() {
   const { login, signup, googleLogin } = useAuth()
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  // Preserve the intended destination (e.g. /become-driver) so applicants can
+  // continue after signing in. Only allow same-origin relative paths.
+  const next = (() => {
+    const n = params.get('next')
+    return n && n.startsWith('/') && !n.startsWith('//') ? n : null
+  })()
+  const goAfter = (role) => navigate(next || roleRoute(role))
+
   const [mode, setMode] = useState('login')
   const [form, setForm] = useState({ name: '', email: '', phone: '', password: '' })
   const [err, setErr] = useState('')
@@ -30,7 +39,7 @@ export default function SignIn() {
           setBusy(true)
           try {
             const d = await googleLogin(resp.credential)
-            navigate(roleRoute(d.role || 'user'))
+            goAfter(d.role || 'user')
           } catch (e) {
             setErr(e.message || 'Google sign-in failed')
           } finally {
@@ -64,7 +73,7 @@ export default function SignIn() {
     return () => {
       cancelled = true
     }
-  }, [googleLogin, navigate])
+  }, [googleLogin])
 
   const submit = async (e) => {
     e.preventDefault()
@@ -80,7 +89,7 @@ export default function SignIn() {
               phone: form.phone.trim(),
               password: form.password,
             })
-      navigate(roleRoute(d.role || d.user?.role || 'user'))
+      goAfter(d.role || d.user?.role || 'user')
     } catch (e2) {
       setErr(e2.message || 'Something went wrong.')
     } finally {
@@ -183,6 +192,13 @@ export default function SignIn() {
 
         <p className="auth-demo mono">
           Demo — rider: create one · driver: suresh@drv.in / Drv@1234
+        </p>
+
+        <p className="auth-driver-hint mono">
+          Want to become a driver?{' '}
+          <Link to="/become-driver" className="auth-driver-link">
+            Apply now
+          </Link>
         </p>
       </motion.div>
     </main>

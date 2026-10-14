@@ -58,10 +58,61 @@ const driverSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    // ── Vehicle details (collected at application time for verification) ───────
+    // Optional at schema level so existing approved drivers and the seed script
+    // keep working; enforced via the /apply route validators for new applications.
+    vehicleNumber: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    vehicleMake: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    vehicleModel: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    vehicleCategory: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    // Reference to the uploaded Registration Certificate (stored privately in the
+    // DriverDocument collection, never embedded in this document).
+    rcDocument: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'DriverDocument',
+      default: null,
+    },
+    // Cached content type of the RC document (avoids a join for the admin list).
+    rcContentType: {
+      type: String,
+      default: '',
+    },
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],
       default: 'pending',
+    },
+    // ── Admin review metadata ─────────────────────────────────────────────────
+    rejectionReason: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    // Admin has no DB record (env-based auth), so we store the reviewer's email.
+    reviewedBy: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    reviewedAt: {
+      type: Date,
+      default: null,
     },
     online: {
       type: Boolean,

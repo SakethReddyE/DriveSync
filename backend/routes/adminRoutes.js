@@ -3,6 +3,9 @@ const {
   getStats,
   getPendingDrivers,
   getActiveDrivers,
+  getRejectedDrivers,
+  getDriverApplication,
+  getDriverRcDocument,
   approveDriver,
   rejectDriver,
   removeDriver,
@@ -17,8 +20,12 @@ const router = express.Router();
 router.use(protect, requireRole('admin'));
 
 router.get('/stats', getStats);
+// Static driver-list routes must come before the /drivers/:id param route.
 router.get('/drivers/pending', getPendingDrivers);
 router.get('/drivers/active', getActiveDrivers);
+router.get('/drivers/rejected', getRejectedDrivers);
+router.get('/drivers/:id', getDriverApplication);
+router.get('/drivers/:id/rc-document', getDriverRcDocument);
 router.patch('/drivers/:id/approve', approveDriver);
 router.patch('/drivers/:id/reject', rejectDriver);
 router.delete('/drivers/:id', removeDriver);

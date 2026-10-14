@@ -27,8 +27,8 @@ export default function Footer() {
         ))}
       </div>
       <div className="container footer-bottom">
-        <span>© {new Date().getFullYear()} DriveSync. Demo project by Saketh.</span>
-        <span className="footer-stack">Built with React · Node · Express · MongoDB · Socket.io</span>
+        <span>© {new Date().getFullYear()} DriveSync.</span>
+        <span className="footer-stack">React · Node · Express · MongoDB · Socket.io</span>
       </div>
     </footer>
   )

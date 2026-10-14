@@ -62,3 +62,63 @@ export async function api(path, { method = 'GET', body, auth = true } = {}) {
   }
   return data
 }
+
+/**
+ * Upload helper for multipart/form-data (file uploads).
+ * Does NOT set Content-Type so the browser can attach the multipart boundary.
+ * Returns parsed JSON, same contract as api().
+ */
+export async function apiUpload(path, formData, { auth = true } = {}) {
+  const headers = {}
+  const token = getToken()
+  if (auth && token) headers.Authorization = `Bearer ${token}`
+
+  let res
+  try {
+    res = await fetch(API_URL + path, { method: 'POST', headers, body: formData })
+  } catch (e) {
+    throw new Error('Network error — the backend may be waking up. Try again in a moment.')
+  }
+
+  let data = null
+  try {
+    data = await res.json()
+  } catch (e) {
+    data = null
+  }
+
+  if (!res.ok || (data && data.success === false)) {
+    const msg = (data && (data.message || data.error)) || `Upload failed (${res.status})`
+    throw new Error(msg)
+  }
+  return data
+}
+
+/**
+ * Fetch a private binary resource (e.g. an RC document) with auth, returning a
+ * Blob. Used by admin review so documents are never loaded from a public URL.
+ */
+export async function apiBlob(path, { auth = true } = {}) {
+  const headers = {}
+  const token = getToken()
+  if (auth && token) headers.Authorization = `Bearer ${token}`
+
+  let res
+  try {
+    res = await fetch(API_URL + path, { method: 'GET', headers })
+  } catch (e) {
+    throw new Error('Network error — the backend may be waking up. Try again in a moment.')
+  }
+
+  if (!res.ok) {
+    let msg = `Request failed (${res.status})`
+    try {
+      const data = await res.json()
+      if (data && (data.message || data.error)) msg = data.message || data.error
+    } catch (e) {
+      /* non-JSON body */
+    }
+    throw new Error(msg)
+  }
+  return res.blob()
+}

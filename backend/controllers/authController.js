@@ -94,31 +94,44 @@ exports.login = async (req, res, next) => {
     const driver = await Driver.findOne({ email: normalizedEmail }).select('+password');
     if (driver) {
       const match = await driver.matchPassword(password);
-      if (!match) {
-        return res.status(401).json({ success: false, message: 'Incorrect email or password.' });
+
+      // A rejected applicant must never receive driver privileges.
+      if (match && driver.status === 'rejected') {
+        return res.status(403).json({
+          success: false,
+          message:
+            'Your driver application was rejected. Sign in with your rider password to view the reason and re-apply.',
+        });
       }
 
-      const role = driver.status === 'pending' ? 'driver-pending' : 'driver';
-      const token = signToken({ id: driver._id, role });
+      if (match) {
+        const role = driver.status === 'pending' ? 'driver-pending' : 'driver';
+        const token = signToken({ id: driver._id, role });
 
-      return res.json({
-        success: true,
-        token,
-        role,
-        user: {
-          id: driver._id,
-          name: driver.name,
-          email: driver.email,
+        return res.json({
+          success: true,
+          token,
           role,
-          status: driver.status,
-          online: driver.online,
-          rating: driver.rating,
-          totalRides: driver.totalRides,
-          location: driver.location,
-          experience: driver.experience,
-          color: driver.color,
-        },
-      });
+          user: {
+            id: driver._id,
+            name: driver.name,
+            email: driver.email,
+            role,
+            status: driver.status,
+            online: driver.online,
+            rating: driver.rating,
+            totalRides: driver.totalRides,
+            location: driver.location,
+            experience: driver.experience,
+            color: driver.color,
+          },
+        });
+      }
+
+      // Password didn't match the driver record. Fall through to the rider
+      // account so applicants (who are riders) can still sign in with their
+      // own rider password. Seeded demo drivers have no User record, so this
+      // changes nothing for them — they simply fall through to the 401 below.
     }
 
     // ── Regular user check ───────────────────────────────────────────────────

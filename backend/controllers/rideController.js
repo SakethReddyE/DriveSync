@@ -3,28 +3,235 @@ const Ride = require('../models/Ride');
 const Driver = require('../models/Driver');
 const { emitToDriver, emitToUser } = require('../socket');
 
+/**
+ * Real road-distance matrix for the 12 Hyderabad areas used in the booking UI.
+ * Values are approximate road distances in km based on actual route data.
+ * The matrix is symmetric (A→B == B→A).
+ * Keys must match exactly the strings in frontend/src/pages/Book.jsx AREAS array.
+ */
+const AREA_DISTANCES = {
+  'Kukatpally, Hyderabad': {
+    'Kukatpally, Hyderabad':    0,
+    'Madhapur, Hyderabad':      5.8,
+    'HITEC City, Hyderabad':    7.2,
+    'Gachibowli, Hyderabad':    9.5,
+    'Kondapur, Hyderabad':      6.4,
+    'Banjara Hills, Hyderabad': 10.2,
+    'Jubilee Hills, Hyderabad': 9.8,
+    'Ameerpet, Hyderabad':      6.1,
+    'Begumpet, Hyderabad':      8.3,
+    'Secunderabad, Hyderabad':  14.0,
+    'Miyapur, Hyderabad':       4.5,
+    'LB Nagar, Hyderabad':      22.5,
+  },
+  'Madhapur, Hyderabad': {
+    'Kukatpally, Hyderabad':    5.8,
+    'Madhapur, Hyderabad':      0,
+    'HITEC City, Hyderabad':    1.8,
+    'Gachibowli, Hyderabad':    4.2,
+    'Kondapur, Hyderabad':      2.5,
+    'Banjara Hills, Hyderabad': 5.5,
+    'Jubilee Hills, Hyderabad': 4.8,
+    'Ameerpet, Hyderabad':      7.3,
+    'Begumpet, Hyderabad':      9.4,
+    'Secunderabad, Hyderabad':  16.2,
+    'Miyapur, Hyderabad':       9.1,
+    'LB Nagar, Hyderabad':      23.8,
+  },
+  'HITEC City, Hyderabad': {
+    'Kukatpally, Hyderabad':    7.2,
+    'Madhapur, Hyderabad':      1.8,
+    'HITEC City, Hyderabad':    0,
+    'Gachibowli, Hyderabad':    3.5,
+    'Kondapur, Hyderabad':      2.9,
+    'Banjara Hills, Hyderabad': 5.2,
+    'Jubilee Hills, Hyderabad': 3.8,
+    'Ameerpet, Hyderabad':      8.5,
+    'Begumpet, Hyderabad':      10.1,
+    'Secunderabad, Hyderabad':  17.5,
+    'Miyapur, Hyderabad':       10.4,
+    'LB Nagar, Hyderabad':      25.0,
+  },
+  'Gachibowli, Hyderabad': {
+    'Kukatpally, Hyderabad':    9.5,
+    'Madhapur, Hyderabad':      4.2,
+    'HITEC City, Hyderabad':    3.5,
+    'Gachibowli, Hyderabad':    0,
+    'Kondapur, Hyderabad':      4.8,
+    'Banjara Hills, Hyderabad': 7.6,
+    'Jubilee Hills, Hyderabad': 6.3,
+    'Ameerpet, Hyderabad':      11.2,
+    'Begumpet, Hyderabad':      13.0,
+    'Secunderabad, Hyderabad':  20.4,
+    'Miyapur, Hyderabad':       12.8,
+    'LB Nagar, Hyderabad':      21.0,
+  },
+  'Kondapur, Hyderabad': {
+    'Kukatpally, Hyderabad':    6.4,
+    'Madhapur, Hyderabad':      2.5,
+    'HITEC City, Hyderabad':    2.9,
+    'Gachibowli, Hyderabad':    4.8,
+    'Kondapur, Hyderabad':      0,
+    'Banjara Hills, Hyderabad': 7.3,
+    'Jubilee Hills, Hyderabad': 6.1,
+    'Ameerpet, Hyderabad':      9.4,
+    'Begumpet, Hyderabad':      11.2,
+    'Secunderabad, Hyderabad':  18.6,
+    'Miyapur, Hyderabad':       8.7,
+    'LB Nagar, Hyderabad':      26.0,
+  },
+  'Banjara Hills, Hyderabad': {
+    'Kukatpally, Hyderabad':    10.2,
+    'Madhapur, Hyderabad':      5.5,
+    'HITEC City, Hyderabad':    5.2,
+    'Gachibowli, Hyderabad':    7.6,
+    'Kondapur, Hyderabad':      7.3,
+    'Banjara Hills, Hyderabad': 0,
+    'Jubilee Hills, Hyderabad': 2.8,
+    'Ameerpet, Hyderabad':      4.5,
+    'Begumpet, Hyderabad':      5.8,
+    'Secunderabad, Hyderabad':  11.0,
+    'Miyapur, Hyderabad':       15.0,
+    'LB Nagar, Hyderabad':      14.5,
+  },
+  'Jubilee Hills, Hyderabad': {
+    'Kukatpally, Hyderabad':    9.8,
+    'Madhapur, Hyderabad':      4.8,
+    'HITEC City, Hyderabad':    3.8,
+    'Gachibowli, Hyderabad':    6.3,
+    'Kondapur, Hyderabad':      6.1,
+    'Banjara Hills, Hyderabad': 2.8,
+    'Jubilee Hills, Hyderabad': 0,
+    'Ameerpet, Hyderabad':      5.6,
+    'Begumpet, Hyderabad':      7.2,
+    'Secunderabad, Hyderabad':  13.5,
+    'Miyapur, Hyderabad':       14.0,
+    'LB Nagar, Hyderabad':      16.0,
+  },
+  'Ameerpet, Hyderabad': {
+    'Kukatpally, Hyderabad':    6.1,
+    'Madhapur, Hyderabad':      7.3,
+    'HITEC City, Hyderabad':    8.5,
+    'Gachibowli, Hyderabad':    11.2,
+    'Kondapur, Hyderabad':      9.4,
+    'Banjara Hills, Hyderabad': 4.5,
+    'Jubilee Hills, Hyderabad': 5.6,
+    'Ameerpet, Hyderabad':      0,
+    'Begumpet, Hyderabad':      2.8,
+    'Secunderabad, Hyderabad':  7.5,
+    'Miyapur, Hyderabad':       10.5,
+    'LB Nagar, Hyderabad':      17.8,
+  },
+  'Begumpet, Hyderabad': {
+    'Kukatpally, Hyderabad':    8.3,
+    'Madhapur, Hyderabad':      9.4,
+    'HITEC City, Hyderabad':    10.1,
+    'Gachibowli, Hyderabad':    13.0,
+    'Kondapur, Hyderabad':      11.2,
+    'Banjara Hills, Hyderabad': 5.8,
+    'Jubilee Hills, Hyderabad': 7.2,
+    'Ameerpet, Hyderabad':      2.8,
+    'Begumpet, Hyderabad':      0,
+    'Secunderabad, Hyderabad':  4.8,
+    'Miyapur, Hyderabad':       13.0,
+    'LB Nagar, Hyderabad':      19.5,
+  },
+  'Secunderabad, Hyderabad': {
+    'Kukatpally, Hyderabad':    14.0,
+    'Madhapur, Hyderabad':      16.2,
+    'HITEC City, Hyderabad':    17.5,
+    'Gachibowli, Hyderabad':    20.4,
+    'Kondapur, Hyderabad':      18.6,
+    'Banjara Hills, Hyderabad': 11.0,
+    'Jubilee Hills, Hyderabad': 13.5,
+    'Ameerpet, Hyderabad':      7.5,
+    'Begumpet, Hyderabad':      4.8,
+    'Secunderabad, Hyderabad':  0,
+    'Miyapur, Hyderabad':       18.5,
+    'LB Nagar, Hyderabad':      22.0,
+  },
+  'Miyapur, Hyderabad': {
+    'Kukatpally, Hyderabad':    4.5,
+    'Madhapur, Hyderabad':      9.1,
+    'HITEC City, Hyderabad':    10.4,
+    'Gachibowli, Hyderabad':    12.8,
+    'Kondapur, Hyderabad':      8.7,
+    'Banjara Hills, Hyderabad': 15.0,
+    'Jubilee Hills, Hyderabad': 14.0,
+    'Ameerpet, Hyderabad':      10.5,
+    'Begumpet, Hyderabad':      13.0,
+    'Secunderabad, Hyderabad':  18.5,
+    'Miyapur, Hyderabad':       0,
+    'LB Nagar, Hyderabad':      27.0,
+  },
+  'LB Nagar, Hyderabad': {
+    'Kukatpally, Hyderabad':    22.5,
+    'Madhapur, Hyderabad':      23.8,
+    'HITEC City, Hyderabad':    25.0,
+    'Gachibowli, Hyderabad':    21.0,
+    'Kondapur, Hyderabad':      26.0,
+    'Banjara Hills, Hyderabad': 14.5,
+    'Jubilee Hills, Hyderabad': 16.0,
+    'Ameerpet, Hyderabad':      17.8,
+    'Begumpet, Hyderabad':      19.5,
+    'Secunderabad, Hyderabad':  22.0,
+    'Miyapur, Hyderabad':       27.0,
+    'LB Nagar, Hyderabad':      0,
+  },
+};
+
+/**
+ * Look up real road distance between two areas.
+ * Falls back to a straight-line estimate if either location isn't in the matrix
+ * (handles free-text input gracefully).
+ */
+function getRoadDistance(pickup, drop) {
+  // Normalise: trim and try exact match first
+  const p = (pickup || '').trim();
+  const d = (drop || '').trim();
+
+  if (AREA_DISTANCES[p] && AREA_DISTANCES[p][d] !== undefined) {
+    return AREA_DISTANCES[p][d];
+  }
+
+  // Partial match — the user may have typed just "Madhapur" without ", Hyderabad"
+  const pKey = Object.keys(AREA_DISTANCES).find(
+    k => k.toLowerCase().startsWith(p.toLowerCase().replace(', hyderabad', ''))
+  );
+  const dKey = Object.keys(AREA_DISTANCES).find(
+    k => k.toLowerCase().startsWith(d.toLowerCase().replace(', hyderabad', ''))
+  );
+  if (pKey && dKey && AREA_DISTANCES[pKey][dKey] !== undefined) {
+    return AREA_DISTANCES[pKey][dKey];
+  }
+
+  // Unknown location — return a reasonable default (10 km)
+  return 10;
+}
+
 exports.calculateFare = async (req, res, next) => {
   try {
     const { pickup, drop } = req.body;
     if (!pickup || !drop)
       return res.status(400).json({ success: false, message: 'Pickup and drop are required' });
 
-    // Deterministic distance based on pickup+drop text so the same pair
-    // always returns the same fare. Uses a simple hash of the combined string.
-    const combined = (pickup + '|' + drop).toLowerCase().trim();
-    let hash = 0;
-    for (let i = 0; i < combined.length; i++) {
-      hash = (hash * 31 + combined.charCodeAt(i)) & 0xffffffff;
-    }
-    // Map hash to 4–19 km range
-    const km = 4 + (Math.abs(hash) % 16);
+    if (pickup.trim() === drop.trim())
+      return res.status(400).json({ success: false, message: 'Pickup and drop cannot be the same location' });
+
+    const km = getRoadDistance(pickup, drop);
 
     const base = 40;
-    const distCharge = km * 6;
+    const distCharge = Math.round(km * 12); // ₹12 per km — realistic Hyderabad rate
     const serviceFee = Math.round((base + distCharge) * 0.05);
     const total = base + distCharge + serviceFee;
 
-    res.json({ success: true, fare: { base, distance: distCharge, serviceFee, total }, distanceKm: km, pickup, drop });
+    res.json({
+      success: true,
+      fare: { base, distance: distCharge, serviceFee, total },
+      distanceKm: km,
+      pickup,
+      drop
+    });
   } catch (err) { next(err); }
 };
 

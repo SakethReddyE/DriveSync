@@ -17,14 +17,8 @@ const driverRoutes = require('./routes/driverRoutes');
 const rideRoutes = require('./routes/rideRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
-// ── Connect to MongoDB ────────────────────────────────────────────────────────
-connectDB();
-
 const app = express();
 const server = http.createServer(app); // wrap express in http.Server for socket.io
-
-// ── Socket.io ─────────────────────────────────────────────────────────────────
-socketManager.init(server);
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 // Allow any origin — required because Vercel generates multiple preview URLs
@@ -62,8 +56,21 @@ app.use((req, res) => {
 // ── Global error handler ──────────────────────────────────────────────────────
 app.use(errorHandler);
 
-// ── Start server ──────────────────────────────────────────────────────────────
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`🚀  DriveSync API running on http://localhost:${PORT}`);
-});
+// Only connect to the DB, bind Socket.io, and start listening when run directly
+// (e.g. `node server.js` on Render). When required by tests, the caller controls
+// the database connection and uses the exported app directly.
+if (require.main === module) {
+  // ── Connect to MongoDB ──────────────────────────────────────────────────────
+  connectDB();
+
+  // ── Socket.io ───────────────────────────────────────────────────────────────
+  socketManager.init(server);
+
+  // ── Start server ──────────────────────────────────────────────────────────────
+  const PORT = process.env.PORT || 5000;
+  server.listen(PORT, () => {
+    console.log(`🚀  DriveSync API running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = { app, server };

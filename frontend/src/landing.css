@@ -1815,3 +1815,987 @@ main {
     min-height: 300px;
   }
 }
+
+/* ============================================================================
+   DriveSync — additions: nav skeleton, RC upload, review modal, status meta
+   ============================================================================ */
+
+/* Navbar loading placeholder — keeps layout stable while the session is
+   restored so authenticated users don't see the logged-out "Sign in". */
+.nav-skeleton {
+  display: inline-block;
+  width: 72px;
+  height: 26px;
+  border-radius: 999px;
+  background: rgba(23, 19, 13, 0.08);
+  animation: nav-skel 1.2s ease-in-out infinite;
+}
+.nav-skeleton-inline {
+  width: 90px;
+  height: 30px;
+  margin: 6px 0;
+}
+@keyframes nav-skel {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+/* Driver-application form — section divider + heading */
+.field-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 8px 0 4px;
+}
+.field-section {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  margin-bottom: 2px;
+}
+
+/* Application status meta block (BecomeDriver status views) */
+.app-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 18px 0;
+  padding: 14px 16px;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--r);
+  background: var(--paper);
+  text-align: left;
+}
+.app-meta .mono {
+  font-size: 0.74rem;
+  color: var(--ink-2);
+}
+
+/* RC document upload field */
+.file-drop {
+  border: 1.5px dashed var(--border);
+  border-radius: var(--r);
+  background: var(--paper);
+  padding: 6px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.file-drop.has-file {
+  border-style: solid;
+  padding: 4px;
+}
+.file-input {
+  display: none;
+}
+.file-drop-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  border-radius: var(--r);
+  color: var(--ink-2);
+  font-size: 0.92rem;
+  transition: background 0.18s, color 0.18s;
+}
+.file-drop-label:hover {
+  background: rgba(23, 19, 13, 0.04);
+  color: var(--ink);
+}
+.file-drop-label svg {
+  color: var(--persimmon);
+  flex-shrink: 0;
+}
+.file-drop-label b {
+  color: var(--ink);
+}
+.file-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--card);
+  border: 1.5px solid var(--ink);
+  border-radius: var(--r-sm);
+}
+.file-chip svg {
+  color: var(--persimmon);
+  flex-shrink: 0;
+}
+.file-chip-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+.file-chip-size {
+  font-size: 0.68rem;
+  color: var(--ink-3);
+}
+.file-chip-x {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: var(--ink-3);
+}
+.file-chip-x:hover {
+  background: rgba(232, 70, 31, 0.12);
+  color: var(--persimmon-deep);
+}
+
+/* Status pill for approved applications */
+.st-approved {
+  color: var(--sage);
+  border-color: rgba(47, 107, 79, 0.5);
+  background: rgba(47, 107, 79, 0.1);
+}
+
+/* Admin application review modal */
+.rv-modal {
+  max-width: 620px;
+}
+.rv-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 26px;
+  margin: 4px 0 18px;
+}
+.rv-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.rv-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.9rem;
+}
+.rv-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+}
+.rv-doc {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.rv-doc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+}
+.rv-missing {
+  font-size: 0.74rem;
+  color: var(--ink-3);
+}
+.rv-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.rv-actions .rl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 620px) {
+  .rv-grid {
+    grid-template-columns: 1fr;
+  }
+  .rv-actions {
+    justify-content: stretch;
+  }
+  .rv-actions .rl-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+/* ============================================================================
+   DriveSync — UX upgrade: navbar driver link, hero skeleton, progress tracker,
+   app status details, admin dashboard polish, sign-in driver hint.
+   ============================================================================ */
+
+/* ── Navbar: Become a Driver link ─────────────────────────────────────────── */
+.nav-become {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--persimmon);
+  padding: 5px 12px;
+  border: 1.5px solid rgba(232, 70, 31, 0.35);
+  border-radius: 999px;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  white-space: nowrap;
+}
+.nav-become:hover {
+  background: var(--persimmon);
+  color: #fff;
+  border-color: var(--persimmon);
+}
+.nav-become-mobile {
+  display: block;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  color: var(--persimmon);
+}
+.nav-become-mobile:hover {
+  background: rgba(232, 70, 31, 0.06);
+}
+
+/* Hide the separate .nav-signin on ≤900 px (it's already hidden by existing rule),
+   but ensure .nav-become also hides — it should appear only in the mobile menu */
+@media (max-width: 900px) {
+  .nav-become {
+    display: none;
+  }
+}
+
+/* ── Hero CTA loading skeleton ───────────────────────────────────────────── */
+.hero-cta-skeleton {
+  gap: 14px;
+  pointer-events: none;
+}
+.hero-cta-skel-btn {
+  display: inline-block;
+  height: 52px;
+  width: 160px;
+  border-radius: var(--r-sm);
+  background: rgba(23, 19, 13, 0.08);
+  animation: nav-skel 1.2s ease-in-out infinite;
+}
+.hero-cta-skel-ghost {
+  width: 140px;
+  background: rgba(23, 19, 13, 0.05);
+}
+
+/* ── Sign-in page: driver application hint ───────────────────────────────── */
+.auth-driver-hint {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--ink-3);
+}
+.auth-driver-link {
+  color: var(--persimmon);
+  font-weight: 700;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.auth-driver-link:hover {
+  color: var(--persimmon-deep);
+}
+
+/* ── Application status card ─────────────────────────────────────────────── */
+.app-status-card {
+  max-width: 560px;
+  width: 100%;
+}
+
+/* Progress tracker */
+.app-tracker {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin: 26px 0;
+  position: relative;
+}
+.tracker-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  position: relative;
+  text-align: center;
+}
+.tracker-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--paper);
+  color: var(--ink-3);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  transition: border-color 0.3s, background 0.3s, color 0.3s;
+}
+.tracker-step.done .tracker-icon {
+  border-color: var(--sage);
+  background: var(--sage);
+  color: #fff;
+}
+.tracker-step.current .tracker-icon {
+  border-color: var(--persimmon);
+  background: var(--persimmon);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(232, 70, 31, 0.15);
+}
+.tracker-label {
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+  line-height: 1.3;
+}
+.tracker-step.done .tracker-label,
+.tracker-step.current .tracker-label {
+  color: var(--ink-2);
+}
+.tracker-line {
+  position: absolute;
+  top: 15px;
+  left: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+  transition: background 0.3s;
+}
+.tracker-line.done {
+  background: var(--sage);
+}
+
+/* Application details grid */
+.app-details-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 16px 0;
+  padding: 16px;
+  background: var(--paper);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+}
+.app-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+.app-detail-label {
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+}
+.app-doc-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+.app-doc-status.submitted {
+  color: var(--sage);
+  background: rgba(47, 107, 79, 0.1);
+  border: 1.5px solid rgba(47, 107, 79, 0.35);
+}
+.app-doc-status.missing {
+  color: var(--ink-3);
+  background: transparent;
+  border: 1.5px solid var(--border);
+}
+
+/* Next steps box */
+.app-next-steps {
+  padding: 14px 16px;
+  background: rgba(232, 70, 31, 0.04);
+  border: 1.5px dashed rgba(232, 70, 31, 0.25);
+  border-radius: var(--r);
+  margin: 16px 0;
+}
+.app-next-label {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--persimmon);
+  margin-bottom: 6px;
+}
+.app-next-text {
+  font-size: 0.86rem;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+.app-next-text code {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  background: rgba(23, 19, 13, 0.07);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+/* Rejection reason box */
+.app-rejection-reason {
+  padding: 14px 16px;
+  background: rgba(232, 70, 31, 0.06);
+  border: 1.5px solid rgba(232, 70, 31, 0.3);
+  border-radius: var(--r);
+  margin: 16px 0;
+  font-size: 0.88rem;
+  color: var(--ink);
+  line-height: 1.5;
+}
+
+/* Verified badge (approved state) */
+.verified-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sage), #1d5c3c);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 18px;
+  box-shadow: 0 8px 24px -8px rgba(47, 107, 79, 0.5);
+}
+.rejected-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(232, 70, 31, 0.1);
+  border: 2px solid rgba(232, 70, 31, 0.4);
+  color: var(--persimmon);
+  display: grid;
+  place-items: center;
+  margin: 0 auto 18px;
+}
+
+/* ── Admin dashboard: polished layout ────────────────────────────────────── */
+.adm-dash {
+  padding-top: 116px;
+}
+
+.adm-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+.adm-refresh-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border);
+  color: var(--ink-3);
+  transition: color 0.18s, border-color 0.18s, transform 0.3s;
+}
+.adm-refresh-btn:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+  transform: rotate(180deg);
+}
+
+/* Stat cards */
+.adm-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.adm-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  transition: border-color 0.18s;
+}
+.adm-stat-card:hover {
+  border-color: var(--ink);
+}
+.adm-stat-skel {
+  height: 78px;
+  background: rgba(23, 19, 13, 0.05);
+  animation: nav-skel 1.2s ease-in-out infinite;
+}
+.adm-stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-sm);
+  background: rgba(23, 19, 13, 0.06);
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.adm-accent-green .adm-stat-icon,
+.adm-stat-card.adm-accent-green .adm-stat-icon {
+  background: rgba(47, 107, 79, 0.1);
+  color: var(--sage);
+}
+.adm-accent-amber .adm-stat-icon,
+.adm-stat-card.adm-accent-amber .adm-stat-icon {
+  background: rgba(242, 176, 44, 0.15);
+  color: #a9791a;
+}
+.adm-accent-blue .adm-stat-icon,
+.adm-stat-card.adm-accent-blue .adm-stat-icon {
+  background: rgba(36, 75, 214, 0.1);
+  color: var(--cobalt);
+}
+/* Fix: accent class is on the outer card, apply to inner icon */
+.adm-stat-card .adm-accent-green { background: rgba(47,107,79,.1); color: var(--sage); }
+.adm-stat-card .adm-accent-amber { background: rgba(242,176,44,.15); color: #a9791a; }
+.adm-stat-card .adm-accent-blue  { background: rgba(36,75,214,.1);  color: var(--cobalt); }
+.adm-stat-num {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.adm-stat-label {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  margin-top: 3px;
+}
+
+/* Charts */
+.adm-chart-grid {
+  margin-bottom: 28px;
+}
+.adm-chart-card {
+  padding: 22px 24px;
+}
+.adm-chart-title {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+  margin-bottom: 14px;
+}
+
+/* Tabs */
+.adm-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 0 0 18px;
+}
+.adm-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-2);
+  transition: all 0.18s;
+  position: relative;
+}
+.adm-tab:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.adm-tab.active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.adm-tab-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--persimmon);
+  color: #fff;
+  font-size: 0.6rem;
+}
+.adm-tab.active .adm-tab-badge {
+  background: var(--persimmon);
+}
+
+/* Search */
+.adm-search-wrap {
+  position: relative;
+  margin-bottom: 16px;
+  max-width: 320px;
+}
+.adm-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-3);
+  pointer-events: none;
+}
+.adm-search {
+  width: 100%;
+  padding: 10px 14px 10px 34px;
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  background: var(--paper);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.adm-search:focus {
+  border-color: var(--ink);
+}
+
+/* Error banner */
+.adm-err {
+  margin-bottom: 14px;
+}
+
+/* Skeleton rows */
+.adm-skeletons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.adm-skeleton-row {
+  height: 64px;
+  border-radius: var(--r);
+  background: rgba(23, 19, 13, 0.05);
+  animation: nav-skel 1.2s ease-in-out infinite;
+}
+
+/* Empty state */
+.adm-empty {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--ink-3);
+}
+
+/* Confirm dialog */
+.adm-confirm {
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 1.5px solid var(--persimmon);
+  border-radius: var(--r);
+  box-shadow: var(--shadow-hard-accent);
+}
+.adm-confirm-msg {
+  font-size: 0.88rem;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+.adm-confirm-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* List rows */
+.adm-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.adm-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  transition: border-color 0.18s;
+}
+.adm-row:hover {
+  border-color: rgba(23, 19, 13, 0.3);
+}
+.adm-av {
+  flex-shrink: 0;
+}
+.adm-row-main {
+  flex: 1 1 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.adm-row-name {
+  font-weight: 600;
+  font-size: 0.94rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.adm-row-meta {
+  font-size: 0.68rem;
+  color: var(--ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.adm-rejection-snippet {
+  font-size: 0.65rem;
+  color: var(--persimmon-deep);
+  margin-top: 2px;
+}
+.adm-row-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.adm-row-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink);
+  background: transparent;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+.adm-row-btn:hover {
+  background: var(--paper-2);
+}
+.adm-btn-danger {
+  color: var(--persimmon-deep);
+  border-color: rgba(232, 70, 31, 0.3);
+}
+.adm-btn-danger:hover {
+  background: rgba(232, 70, 31, 0.08);
+  border-color: var(--persimmon);
+  color: var(--persimmon-deep);
+}
+.adm-btn-success {
+  background: var(--sage);
+  color: #fff;
+  border-color: var(--sage);
+}
+.adm-btn-success:hover {
+  background: #245c3e;
+  border-color: #245c3e;
+}
+
+/* Review modal improvements */
+.adm-review-modal {
+  max-width: 640px;
+}
+.rv-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1.5px solid var(--border);
+}
+.rv-av {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.rv-name {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1;
+  margin: 0;
+}
+.rv-status-badge {
+  margin-left: auto;
+}
+.rv-section-heading {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+  margin-bottom: 10px;
+}
+.rv-value {
+  font-size: 0.88rem;
+  text-align: right;
+  color: var(--ink);
+}
+.adm-reject-reason {
+  margin-top: 14px;
+  width: 100%;
+  min-height: 70px;
+}
+.adm-btn-reject {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--persimmon-deep);
+  border-color: rgba(232, 70, 31, 0.4);
+}
+.adm-btn-reject:hover {
+  background: rgba(232, 70, 31, 0.08);
+}
+.adm-btn-approve {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ── Responsive: admin stats ─────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .adm-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 560px) {
+  .adm-stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .adm-stat-num {
+    font-size: 1.3rem;
+  }
+  .adm-row {
+    gap: 10px;
+  }
+  .adm-row-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+  .app-tracker {
+    gap: 0;
+  }
+  .tracker-label {
+    font-size: 0.56rem;
+  }
+}
+
+/* ── LiveMapCard — spacious, polished layout ─────────────────────────────── */
+
+/* Card: more internal breathing room */
+.map-card {
+  padding: 18px;
+}
+
+/* Directions strip: roomier padding, larger gap between rows */
+.dir-box {
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+.dir-points {
+  gap: 14px;
+}
+/* Move the connector line so it runs between the two dot centres */
+.dir-connector {
+  top: 18px;
+  bottom: 18px;
+}
+
+/* Two-line address block — label + place name */
+.dir-addr-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dir-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-3);
+  line-height: 1;
+}
+/* Larger, bolder place name — no more tiny cramped text */
+.dir-box .dir-addr {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.25;
+}
+/* Distance / time column */
+.dir-meta b    { font-size: 1rem; }
+.dir-meta span { font-size: 0.74rem; }
+
+/* Map frame: explicit height so the iframe fills properly */
+.map-frame-embed {
+  height: 280px;
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.map-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+/* LIVE badge sits above the iframe */
+.map-frame-embed .map-live {
+  z-index: 2;
+}
+
+/* Driver strip: more padding, softer meta text */
+.map-driver {
+  margin-top: 16px;
+  padding-top: 16px;
+  gap: 14px;
+}
+.map-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+}
+.map-driver-name {
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+}
+.map-driver-meta {
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+  margin-top: 3px;
+  white-space: normal;   /* allow line-wrap instead of text clipping */
+  overflow: visible;
+}
+.map-fare-amt  { font-size: 1.2rem; }
+.map-fare-label { font-size: 0.58rem; letter-spacing: 0.12em; }
+
+/* Stamp: pull it in slightly so it never clips over the card edge */
+.stamp {
+  top: -16px;
+  right: -4px;
+  width: 84px;
+  height: 84px;
+}

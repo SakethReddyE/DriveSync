@@ -48,7 +48,7 @@ export default function Book() {
     }
     let alive = true
     setFareBusy(true)
-    api('/rides/fare', { method: 'POST', auth: false, body: { pickup, drop, distanceKm: 8 } })
+    api('/rides/fare', { method: 'POST', auth: false, body: { pickup, drop } })
       .then((d) => alive && setFare({ ...d.fare, distanceKm: d.distanceKm }))
       .catch(() => {})
       .finally(() => alive && setFareBusy(false))
